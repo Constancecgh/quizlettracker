@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quizlet Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* ── THEMES ── */
+  [data-theme="dark"] {
+    --bg: #080810;
+    --surface: #0f0f1a;
+    --card: #12121e;
+    --card2: #151522;
+    --border: #1e1e30;
+    --border2: #252538;
+    --text: #f0f0f8;
+    --text2: #c8c8e0;
+    --muted: #5a5a78;
+    --muted2: #3a3a55;
+    --shadow: rgba(0,0,0,0.4);
+    --bg-grad1: rgba(139,124,248,0.08);
+    --bg-grad2: rgba(232,121,160,0.06);
+  }
+  [data-theme="light"] {
+    --bg: #f4f4fb;
+    --surface: #ffffff;
+    --card: #ffffff;
+    --card2: #f8f8ff;
+    --border: #e2e2f0;
+    --border2: #d0d0e8;
+    --text: #1a1a2e;
+    --text2: #3a3a5c;
+    --muted: #8888aa;
+    --muted2: #bbbbcc;
+    --shadow: rgba(100,100,180,0.1);
+    --bg-grad1: rgba(139,124,248,0.05);
+    --bg-grad2: rgba(232,121,160,0.04);
+  }
+
+  :root {
+    --accent: #8b7cf8;
+    --accent-soft: rgba(139,124,248,0.12);
+    --accent-glow: rgba(139,124,248,0.25);
+    --rose: #e879a0;
+    --rose-soft: rgba(232,121,160,0.12);
+    --gold: #e8c97a;
+    --gold-soft: rgba(232,201,122,0.12);
+    --green: #5eead4;
+    --red: #f87171;
+    --orange: #fb923c;
+    --radius: 16px;
+    --radius-sm: 10px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Outfit', sans-serif;
+    font-weight: 400;
+    min-height: 100vh;
+    padding: 3rem 1.5rem 5rem;
+    background-image:
+      radial-gradient(ellipse 70% 60% at 15% 0%, var(--bg-grad1) 0%, transparent 55%),
+      radial-gradient(ellipse 50% 40% at 85% 100%, var(--bg-grad2) 0%, transparent 50%);
+    transition: background 0.3s, color 0.3s;
+  }
+
+  .container { max-width: 860px; margin: 0 auto; }
+
+  /* ── HEADER ── */
+  header { text-align: center; margin-bottom: 3rem; animation: fadeDown 0.7s cubic-bezier(0.22,1,0.36,1) both; position: relative; }
+
+  .header-actions { position: absolute; top: 0; right: 0; display: flex; gap: 0.5rem; }
+
+  .btn-icon-round {
+    background: var(--card); border: 1px solid var(--border); color: var(--muted);
+    border-radius: 50%; width: 38px; height: 38px; display: flex; align-items: center;
+    justify-content: center; font-size: 1rem; cursor: pointer;
+    transition: all 0.2s; font-family: 'Outfit', sans-serif;
+  }
+  .btn-icon-round:hover { border-color: var(--accent); color: var(--accent); }
+
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    font-size: 0.7rem; font-weight: 500; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 1.2rem;
+  }
+  .eyebrow::before, .eyebrow::after { content: ''; display: block; width: 24px; height: 1px; background: var(--accent); opacity: 0.5; }
+
+  h1 {
+    font-family: 'Playfair Display', serif; font-size: clamp(2.4rem, 7vw, 4rem);
+    font-weight: 700; line-height: 1.05; letter-spacing: -0.02em; color: var(--text); margin-bottom: 0.7rem;
+  }
+  h1 em {
+    font-style: italic;
+    background: linear-gradient(120deg, var(--accent) 0%, var(--rose) 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+  .subtitle { font-size: 0.88rem; font-weight: 400; color: var(--muted); letter-spacing: 0.02em; }
+
+  /* ── STATS ── */
+  .stats-bar {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem;
+    margin-bottom: 1.8rem; animation: fadeUp 0.6s 0.1s cubic-bezier(0.22,1,0.36,1) both;
+  }
+  .stat {
+    background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 1.1rem 1.2rem; transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .stat:hover { border-color: var(--border2); box-shadow: 0 4px 20px var(--shadow); }
+  .stat-label { font-size: 0.65rem; font-weight: 500; color: var(--muted); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 0.4rem; }
+  .stat-value { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 700; line-height: 1; }
+  .v-accent { color: var(--accent); }
+  .v-gold   { color: var(--gold); }
+  .v-green  { color: var(--green); }
+  .v-text   { color: var(--text2); }
+
+  /* ── CHART ── */
+  .chart-section {
+    background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 1.6rem; margin-bottom: 1.8rem; animation: fadeUp 0.6s 0.15s cubic-bezier(0.22,1,0.36,1) both;
+  }
+  .section-label {
+    font-size: 0.68rem; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 1.2rem; display: flex; align-items: center; justify-content: space-between;
+  }
+  .section-label span { font-weight: 400; font-size: 0.63rem; color: var(--muted2); letter-spacing: 0.05em; text-transform: none; }
+  .chart-wrap { display: flex; align-items: flex-end; gap: 5px; height: 110px; }
+  .chart-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px; }
+  .chart-track { width: 100%; height: 88px; background: var(--surface); border-radius: 6px 6px 0 0; display: flex; align-items: flex-end; overflow: hidden; }
+  .chart-fill { width: 100%; border-radius: 6px 6px 0 0; transition: height 0.5s cubic-bezier(0.34,1.56,0.64,1); position: relative; cursor: default; }
+  .chart-fill::after {
+    content: attr(data-tip); position: absolute; bottom: 105%; left: 50%; transform: translateX(-50%);
+    background: var(--card2); border: 1px solid var(--border2); border-radius: 6px;
+    padding: 3px 8px; font-size: 0.62rem; white-space: nowrap; color: var(--text2);
+    opacity: 0; pointer-events: none; transition: opacity 0.15s; z-index: 5;
+  }
+  .chart-fill:hover::after { opacity: 1; }
+  .chart-lbl { font-size: 0.58rem; color: var(--muted); text-align: center; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .chart-empty { color: var(--muted2); font-size: 0.82rem; text-align: center; width: 100%; padding: 1.5rem; }
+
+  /* ── ADD FORM ── */
+  .add-form {
+    background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 1.5rem; margin-bottom: 1.5rem; animation: fadeUp 0.6s 0.2s cubic-bezier(0.22,1,0.36,1) both;
+  }
+  .form-label { font-size: 0.68rem; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.9rem; }
+  .form-row { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+  .form-row-2 { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 0.75rem; }
+
+  input[type="text"], input[type="date"], select {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm);
+    color: var(--text); font-family: 'Outfit', sans-serif; font-size: 0.9rem; font-weight: 400;
+    padding: 0.7rem 1rem; outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  input[type="text"] { flex: 1; min-width: 180px; }
+  input[type="date"] { flex: 1; min-width: 160px; color-scheme: dark; }
+  [data-theme="light"] input[type="date"] { color-scheme: light; }
+  input[type="text"]:focus, input[type="date"]:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+  input::placeholder { color: var(--muted2); font-weight: 300; }
+
+  .date-label { font-size: 0.72rem; color: var(--muted); align-self: center; white-space: nowrap; }
+
+  button {
+    font-family: 'Outfit', sans-serif; font-weight: 600; font-size: 0.88rem;
+    letter-spacing: 0.04em; border: none; border-radius: var(--radius-sm);
+    padding: 0.7rem 1.4rem; cursor: pointer; transition: all 0.18s;
+  }
+  .btn-primary { background: var(--accent); color: #fff; box-shadow: 0 2px 12px var(--accent-glow); }
+  .btn-primary:hover { background: #7a6ae6; transform: translateY(-1px); box-shadow: 0 4px 20px var(--accent-glow); }
+  .btn-primary:active { transform: translateY(0); }
+
+  /* ── DATA BUTTONS ── */
+  .data-row {
+    display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap;
+    animation: fadeUp 0.6s 0.22s cubic-bezier(0.22,1,0.36,1) both;
+  }
+  .btn-data {
+    background: var(--card); border: 1px solid var(--border); color: var(--muted);
+    border-radius: var(--radius-sm); padding: 0.5rem 1rem; font-size: 0.78rem; font-weight: 500;
+    font-family: 'Outfit', sans-serif; transition: all 0.18s; cursor: pointer;
+  }
+  .btn-data:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ── CONTROLS ── */
+  .controls-row { display: flex; gap: 0.75rem; margin-bottom: 1rem; flex-wrap: wrap; animation: fadeUp 0.6s 0.25s cubic-bezier(0.22,1,0.36,1) both; }
+  .controls-row input { flex: 1; min-width: 160px; }
+  select { cursor: pointer; color: var(--text2); }
+  select option { background: var(--surface); }
+
+  /* ── TABS ── */
+  .tabs { display: flex; gap: 0.4rem; margin-bottom: 1.4rem; flex-wrap: wrap; animation: fadeUp 0.6s 0.3s cubic-bezier(0.22,1,0.36,1) both; }
+  .tab {
+    background: transparent; border: 1px solid var(--border); color: var(--muted);
+    border-radius: 100px; padding: 0.35rem 1rem; font-size: 0.78rem; font-weight: 500;
+    font-family: 'Outfit', sans-serif; letter-spacing: 0.03em; transition: all 0.18s; cursor: pointer;
+  }
+  .tab:hover { border-color: var(--border2); color: var(--text2); }
+  .tab.active { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+
+  /* ── CARDS ── */
+  .cards-grid { display: grid; gap: 0.85rem; animation: fadeUp 0.6s 0.35s cubic-bezier(0.22,1,0.36,1) both; }
+  .quizlet-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 1.3rem 1.5rem; display: grid; grid-template-columns: 1fr auto;
+    gap: 1.2rem; align-items: start; transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+    position: relative; overflow: hidden;
+  }
+  .quizlet-card::after {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 2px;
+    border-radius: 2px 0 0 2px; opacity: 0; transition: opacity 0.25s;
+  }
+  .quizlet-card:hover { border-color: var(--border2); transform: translateY(-1px); box-shadow: 0 8px 32px var(--shadow); }
+  .quizlet-card:hover::after { opacity: 1; }
+  .quizlet-card.c-normal::after  { background: var(--accent); }
+  .quizlet-card.c-priority::after { background: var(--rose); }
+  .quizlet-card.c-mastered { border-color: rgba(232,201,122,0.2); }
+  .quizlet-card.c-mastered::after { background: var(--gold); opacity: 1; }
+  .quizlet-card.c-mastered:hover { border-color: rgba(232,201,122,0.4); }
+  .quizlet-card.c-urgent { border-color: rgba(248,113,113,0.25); }
+  .quizlet-card.c-urgent::after { background: var(--red); }
+
+  /* DEADLINE BADGE */
+  .deadline-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 0.65rem; font-weight: 600; border-radius: 100px; padding: 2px 9px;
+    border: 1px solid; margin-top: 0.4rem;
+  }
+  .dl-ok     { color: var(--green);  border-color: rgba(94,234,212,0.3);  background: rgba(94,234,212,0.08); }
+  .dl-soon   { color: var(--orange); border-color: rgba(251,146,60,0.3);  background: rgba(251,146,60,0.08); }
+  .dl-urgent { color: var(--red);    border-color: rgba(248,113,113,0.3); background: rgba(248,113,113,0.08); }
+  .dl-past   { color: var(--muted);  border-color: var(--border2);        background: var(--surface); }
+
+  /* NAME ROW */
+  .card-name-row { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 0.9rem; }
+  .card-name { font-family: 'Playfair Display', serif; font-size: 1.05rem; font-weight: 600; color: var(--text); letter-spacing: -0.01em; line-height: 1.3; }
+  .badge { font-family: 'Outfit', sans-serif; font-size: 0.6rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; border-radius: 100px; padding: 2px 9px; }
+  .badge-gold { background: var(--gold-soft); color: var(--gold); border: 1px solid rgba(232,201,122,0.25); }
+  .badge-rose { background: var(--rose-soft); color: var(--rose); border: 1px solid rgba(232,121,160,0.25); }
+
+  /* PROGRESS */
+  .prog-wrap { margin-bottom: 0.8rem; }
+  .prog-track { height: 5px; background: var(--surface); border-radius: 100px; overflow: hidden; margin-bottom: 0.45rem; }
+  .prog-fill { height: 100%; border-radius: 100px; transition: width 0.45s cubic-bezier(0.34,1.56,0.64,1), background 0.4s; }
+  .prog-meta { display: flex; justify-content: space-between; align-items: center; }
+  .prog-pct { font-size: 0.7rem; color: var(--muted); }
+  .prog-count { font-family: 'Playfair Display', serif; font-size: 1rem; font-weight: 700; }
+  .prog-count.c-a { color: var(--accent); }
+  .prog-count.c-g { color: var(--gold); }
+
+  /* DOTS */
+  .dots-row { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 0.7rem; }
+  .dot { width: 22px; height: 22px; border-radius: 6px; border: 1px solid var(--border2); background: var(--surface); cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; font-size: 0.58rem; color: transparent; }
+  .dot:hover { border-color: var(--accent); background: var(--accent-soft); }
+  .dot.on      { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: 0 1px 6px var(--accent-glow); }
+  .dot.on.r678 { background: var(--rose);   border-color: var(--rose);   box-shadow: 0 1px 6px var(--rose-soft); }
+  .dot.on.r9   { background: var(--gold);   border-color: var(--gold);   color: #111; box-shadow: 0 1px 6px var(--gold-soft); }
+
+  .card-meta { font-size: 0.65rem; color: var(--muted2); letter-spacing: 0.03em; }
+
+  /* ACTIONS */
+  .card-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem; }
+  .btn-add { background: var(--accent-soft); border: 1px solid rgba(139,124,248,0.2); color: var(--accent); border-radius: var(--radius-sm); padding: 0.45rem 0.9rem; font-size: 0.8rem; font-weight: 600; white-space: nowrap; font-family: 'Outfit', sans-serif; }
+  .btn-add:hover { background: rgba(139,124,248,0.2); }
+  .btn-sm { background: transparent; border: 1px solid var(--border); color: var(--muted); border-radius: 8px; padding: 0.38rem 0.65rem; font-size: 0.78rem; font-family: 'Outfit', sans-serif; transition: all 0.15s; }
+  .btn-sm:hover { border-color: var(--border2); color: var(--text2); }
+  .btn-sm.del:hover { border-color: rgba(232,121,160,0.4); color: var(--rose); }
+
+  /* EMPTY */
+  .empty { text-align: center; padding: 4rem 2rem; color: var(--muted2); }
+  .empty-icon { font-size: 2.5rem; margin-bottom: 0.8rem; opacity: 0.35; }
+  .empty p { font-size: 0.88rem; font-weight: 300; }
+
+  /* TOAST */
+  .toast {
+    position: fixed; bottom: 1.8rem; right: 1.8rem; background: var(--card2);
+    border: 1px solid var(--border2); color: var(--text2); padding: 0.8rem 1.3rem;
+    border-radius: var(--radius); font-size: 0.85rem; font-weight: 500;
+    box-shadow: 0 12px 40px var(--shadow); transform: translateY(110px); opacity: 0;
+    transition: all 0.35s cubic-bezier(0.34,1.56,0.64,1); z-index: 1000; max-width: 280px;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  /* CONFETTI CANVAS */
+  #confettiCanvas { position: fixed; inset: 0; pointer-events: none; z-index: 999; }
+
+  /* MODAL */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); backdrop-filter: blur(4px); z-index: 200; align-items: center; justify-content: center; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--card2); border: 1px solid var(--border2); border-radius: var(--radius); padding: 2rem; width: 90%; max-width: 420px; animation: fadeUp 0.3s cubic-bezier(0.22,1,0.36,1) both; }
+  .modal h3 { font-family: 'Playfair Display', serif; font-size: 1.2rem; font-weight: 600; margin-bottom: 1.2rem; color: var(--text); }
+  .modal input { width: 100%; margin-bottom: 0.75rem; }
+  .modal-sub { font-size: 0.72rem; color: var(--muted); margin-bottom: 0.75rem; }
+  .modal-btns { display: flex; gap: 0.6rem; justify-content: flex-end; margin-top: 0.5rem; }
+  .btn-cancel { background: transparent; border: 1px solid var(--border); color: var(--muted); border-radius: var(--radius-sm); padding: 0.65rem 1.1rem; font-size: 0.85rem; font-family: 'Outfit', sans-serif; }
+  .btn-cancel:hover { border-color: var(--border2); color: var(--text2); }
+
+  /* ANIMATIONS */
+  @keyframes fadeDown { from { opacity:0; transform:translateY(-18px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes fadeUp   { from { opacity:0; transform:translateY(14px);  } to { opacity:1; transform:translateY(0); } }
+
+  @media (max-width: 580px) {
+    .stats-bar { grid-template-columns: repeat(2,1fr); }
+    .quizlet-card { grid-template-columns: 1fr; }
+    .card-actions { flex-direction: row; flex-wrap: wrap; }
+    .header-actions { position: static; justify-content: center; margin-bottom: 1rem; }
+  }
+</style>
+</head>
+<body>
+<canvas id="confettiCanvas"></canvas>
+<div class="container">
+
+  <header>
+    <div class="header-actions">
+      <button class="btn-icon-round" id="themeBtn" onclick="toggleTheme()" title="Mode clair/sombre">🌙</button>
+    </div>
+    <div class="eyebrow">Suivi de révisions</div>
+    <h1>Mes <em>Quizlets</em></h1>
+    <p class="subtitle">Priorité intelligente · Progression visuelle · Graphique</p>
+  </header>
+
+  <div class="stats-bar">
+    <div class="stat"><div class="stat-label">Quizlets</div><div class="stat-value v-accent" id="statTotal">0</div></div>
+    <div class="stat"><div class="stat-label">Vues totales</div><div class="stat-value v-text" id="statViews">0</div></div>
+    <div class="stat"><div class="stat-label">Maîtrisés</div><div class="stat-value v-gold" id="statMastered">0</div></div>
+    <div class="stat"><div class="stat-label">En cours</div><div class="stat-value v-green" id="statInProgress">0</div></div>
+  </div>
+
+  <div class="chart-section">
+    <div class="section-label">Progression par quizlet <span id="chartSub"></span></div>
+    <div class="chart-wrap" id="chartWrap"><div class="chart-empty">Ajoute des quizlets pour voir le graphique</div></div>
+  </div>
+
+  <div class="add-form">
+    <div class="form-label">Ajouter un quizlet</div>
+    <div class="form-row">
+      <input type="text" id="inputName" placeholder="Ex : Définitions Chapitre 3…" />
+      <button class="btn-primary" onclick="addQuizlet()">Ajouter</button>
+    </div>
+    <div class="form-row-2">
+      <span class="date-label">📅 Date d'examen (optionnel) :</span>
+      <input type="date" id="inputDeadline" />
+    </div>
+  </div>
+
+  <div class="data-row">
+    <button class="btn-data" onclick="exportJSON()">⬇️ Exporter mes données</button>
+    <button class="btn-data" onclick="document.getElementById('importFile').click()">⬆️ Importer des données</button>
+    <input type="file" id="importFile" accept=".json" style="display:none" onchange="importJSON(event)" />
+  </div>
+
+  <div class="controls-row">
+    <input type="text" id="searchInput" placeholder="Rechercher un quizlet…" oninput="render()" />
+    <select id="sortSelect" onchange="render()">
+      <option value="priority">🔥 Priorité</option>
+      <option value="deadline">📅 Deadline proche</option>
+      <option value="name">A → Z</option>
+      <option value="views_desc">Plus vus</option>
+      <option value="recent">Récents</option>
+    </select>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="setFilter('all',this)">Tous</button>
+    <button class="tab" onclick="setFilter('in_progress',this)">En cours</button>
+    <button class="tab" onclick="setFilter('mastered',this)">Maîtrisés ⭐</button>
+    <button class="tab" onclick="setFilter('new',this)">Jamais vus</button>
+    <button class="tab" onclick="setFilter('urgent',this)">🚨 Urgent</button>
+  </div>
+
+  <div class="cards-grid" id="cardsGrid"></div>
+  <div class="toast" id="toast"></div>
+
+  <!-- RENAME MODAL -->
+  <div class="modal-overlay" id="renameModal">
+    <div class="modal">
+      <h3>Renommer le quizlet</h3>
+      <input type="text" id="renameInput" placeholder="Nouveau nom…" />
+      <div class="modal-sub">Tu peux aussi modifier la date d'examen :</div>
+      <input type="date" id="renameDeadline" />
+      <div class="modal-btns">
+        <button class="btn-cancel" onclick="closeRename()">Annuler</button>
+        <button class="btn-primary" onclick="confirmRename()">Enregistrer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ── STATE ── */
+let quizlets = JSON.parse(localStorage.getItem('quizlets_v5') || '[]');
+let currentFilter = 'all';
+let renameId = null;
+let isDark = localStorage.getItem('theme') !== 'light';
+
+/* ── THEME ── */
+function applyTheme() {
+  document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+  document.getElementById('themeBtn').textContent = isDark ? '🌙' : '☀️';
+  localStorage.setItem('theme', isDark ? 'dark' : 'light');
+}
+function toggleTheme() { isDark = !isDark; applyTheme(); }
+applyTheme();
+
+/* ── SAVE ── */
+function save() { localStorage.setItem('quizlets_v5', JSON.stringify(quizlets)); }
+
+/* ── EXPORT / IMPORT ── */
+function exportJSON() {
+  const blob = new Blob([JSON.stringify(quizlets, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'quizlets_sauvegarde.json';
+  a.click();
+  showToast('⬇️ Sauvegarde téléchargée !');
+}
+
+function importJSON(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      if (!Array.isArray(data)) throw new Error();
+      if (!confirm(`Importer ${data.length} quizlet(s) ? Tes données actuelles seront fusionnées.`)) return;
+      // Merge: add only non-existing (by name)
+      let added = 0;
+      data.forEach(q => {
+        if (!quizlets.find(x => x.name.toLowerCase() === q.name.toLowerCase())) {
+          quizlets.push(q); added++;
+        }
+      });
+      save(); render();
+      showToast(`✅ ${added} quizlet(s) importé(s) !`);
+    } catch { showToast('❌ Fichier invalide !'); }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+}
+
+/* ── DEADLINE HELPERS ── */
+function daysUntil(dateStr) {
+  if (!dateStr) return null;
+  const now = new Date(); now.setHours(0,0,0,0);
+  const d = new Date(dateStr);
+  return Math.ceil((d - now) / 86400000);
+}
+
+function deadlineInfo(dateStr) {
+  const days = daysUntil(dateStr);
+  if (days === null) return null;
+  if (days < 0)  return { label: `Examen passé`, cls: 'dl-past', urgent: false };
+  if (days === 0) return { label: `Aujourd'hui !`, cls: 'dl-urgent', urgent: true };
+  if (days <= 3) return { label: `Dans ${days}j ⚠️`, cls: 'dl-urgent', urgent: true };
+  if (days <= 7) return { label: `Dans ${days}j`, cls: 'dl-soon', urgent: false };
+  return { label: `Dans ${days}j`, cls: 'dl-ok', urgent: false };
+}
+
+/* ── FILTER / SORT ── */
+function setFilter(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+}
+
+function getSorted(list) {
+  const s = document.getElementById('sortSelect').value;
+  const a = [...list];
+  if (s === 'priority') a.sort((x,y) => x.views - y.views);
+  else if (s === 'deadline') a.sort((x,y) => {
+    const dx = daysUntil(x.deadline) ?? 9999;
+    const dy = daysUntil(y.deadline) ?? 9999;
+    return dx - dy;
+  });
+  else if (s === 'name') a.sort((x,y) => x.name.localeCompare(y.name));
+  else if (s === 'views_desc') a.sort((x,y) => y.views - x.views);
+  else a.sort((x,y) => y.id - x.id);
+  return a;
+}
+
+function getFiltered() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  return quizlets.filter(x => {
+    if (q && !x.name.toLowerCase().includes(q)) return false;
+    if (currentFilter === 'mastered')    return x.views >= 9;
+    if (currentFilter === 'in_progress') return x.views > 0 && x.views < 9;
+    if (currentFilter === 'new')         return x.views === 0;
+    if (currentFilter === 'urgent') {
+      const d = daysUntil(x.deadline);
+      return d !== null && d >= 0 && d <= 3 && x.views < 9;
+    }
+    return true;
+  });
+}
+
+/* ── ADD ── */
+function addQuizlet() {
+  const inp = document.getElementById('inputName');
+  const name = inp.value.trim();
+  if (!name) { showToast('⚠️ Entre un nom !'); return; }
+  if (quizlets.find(x => x.name.toLowerCase() === name.toLowerCase())) { showToast('❌ Existe déjà !'); return; }
+  const deadline = document.getElementById('inputDeadline').value || null;
+  quizlets.unshift({ id: Date.now(), name, views: 0, deadline, createdAt: new Date().toLocaleDateString('fr-FR') });
+  inp.value = '';
+  document.getElementById('inputDeadline').value = '';
+  save(); render();
+  showToast('✅ Quizlet ajouté');
+}
+
+/* ── VIEWS ── */
+function addView(id) {
+  const q = quizlets.find(x => x.id === id);
+  if (!q) return;
+  if (q.views < 9) {
+    q.views++; save(); render();
+    if (q.views === 9) { showToast(`⭐ "${q.name}" est maîtrisé !`); launchConfetti(); }
+    else showToast(`👁 +1 vue — ${q.views}/9`);
+  } else showToast('⭐ Déjà maîtrisé !');
+}
+
+function setViews(id, val) {
+  const q = quizlets.find(x => x.id === id);
+  if (!q) return;
+  const wasMastered = q.views >= 9;
+  q.views = val; save(); render();
+  if (val === 9 && !wasMastered) { showToast(`⭐ "${q.name}" maîtrisé !`); launchConfetti(); }
+}
+
+function dotClick(id, val) {
+  const q = quizlets.find(x => x.id === id);
+  if (!q) return;
+  setViews(id, q.views === val ? val - 1 : val);
+}
+
+/* ── DELETE ── */
+function deleteQuizlet(id) {
+  if (!confirm('Supprimer ce quizlet ?')) return;
+  quizlets = quizlets.filter(x => x.id !== id);
+  save(); render(); showToast('🗑 Supprimé');
+}
+
+/* ── RENAME ── */
+function openRename(id) {
+  renameId = id;
+  const q = quizlets.find(x => x.id === id);
+  document.getElementById('renameInput').value = q.name;
+  document.getElementById('renameDeadline').value = q.deadline || '';
+  document.getElementById('renameModal').classList.add('open');
+  setTimeout(() => document.getElementById('renameInput').focus(), 60);
+}
+function closeRename() { document.getElementById('renameModal').classList.remove('open'); renameId = null; }
+function confirmRename() {
+  const val = document.getElementById('renameInput').value.trim();
+  if (!val) { showToast('⚠️ Nom vide !'); return; }
+  if (quizlets.find(x => x.id !== renameId && x.name.toLowerCase() === val.toLowerCase())) { showToast('❌ Nom déjà pris !'); return; }
+  const q = quizlets.find(x => x.id === renameId);
+  if (q) {
+    q.name = val;
+    q.deadline = document.getElementById('renameDeadline').value || null;
+    save(); render(); showToast('✏️ Modifié !');
+  }
+  closeRename();
+}
+document.getElementById('renameInput').addEventListener('keydown', e => { if (e.key==='Enter') confirmRename(); if (e.key==='Escape') closeRename(); });
+document.getElementById('renameModal').addEventListener('click', e => { if (e.target===e.currentTarget) closeRename(); });
+
+/* ── CONFETTI ── */
+function launchConfetti() {
+  const canvas = document.getElementById('confettiCanvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  const colors = ['#8b7cf8','#e879a0','#e8c97a','#5eead4','#fb923c','#f0f0f8'];
+  const particles = Array.from({length: 120}, () => ({
+    x: Math.random() * canvas.width,
+    y: -10 - Math.random() * 100,
+    r: 4 + Math.random() * 6,
+    color: colors[Math.floor(Math.random() * colors.length)],
+    vx: (Math.random() - 0.5) * 4,
+    vy: 2 + Math.random() * 4,
+    angle: Math.random() * Math.PI * 2,
+    va: (Math.random() - 0.5) * 0.2,
+    life: 1
+  }));
+  let frame;
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    let alive = false;
+    particles.forEach(p => {
+      p.x += p.vx; p.y += p.vy; p.angle += p.va; p.life -= 0.012;
+      if (p.life <= 0 || p.y > canvas.height) return;
+      alive = true;
+      ctx.save();
+      ctx.globalAlpha = Math.max(0, p.life);
+      ctx.translate(p.x, p.y); ctx.rotate(p.angle);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(-p.r/2, -p.r/2, p.r, p.r * 0.5);
+      ctx.restore();
+    });
+    if (alive) frame = requestAnimationFrame(draw);
+    else ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+  cancelAnimationFrame(frame);
+  draw();
+}
+
+/* ── HELPERS ── */
+function barGradient(pct) {
+  if (pct <= 0)   return isDark ? '#1e1e30' : '#e8e8f0';
+  if (pct < 0.33) return 'linear-gradient(90deg,#e879a0,#f8a4c0)';
+  if (pct < 0.67) return 'linear-gradient(90deg,#8b7cf8,#b09ef9)';
+  if (pct < 1)    return 'linear-gradient(90deg,#6ee7b7,#8b7cf8)';
+  return 'linear-gradient(90deg,#e8c97a,#5eead4)';
+}
+
+function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('show'), 2600);
+}
+
+/* ── CHART ── */
+function renderChart() {
+  const wrap = document.getElementById('chartWrap');
+  const sub  = document.getElementById('chartSub');
+  if (!quizlets.length) {
+    wrap.innerHTML = '<div class="chart-empty">Ajoute des quizlets pour voir le graphique</div>';
+    sub.textContent = ''; return;
+  }
+  const sorted = [...quizlets].sort((a,b) => b.views - a.views);
+  sub.textContent = `${quizlets.length} quizlet${quizlets.length>1?'s':''}`;
+  wrap.innerHTML = sorted.map(q => {
+    const pct = q.views / 9;
+    const h = Math.max(Math.round(pct * 88), q.views > 0 ? 4 : 0);
+    const col = pct >= 1 ? 'linear-gradient(180deg,#e8c97a,rgba(232,201,122,0.3))'
+              : pct >= 0.67 ? 'linear-gradient(180deg,#6ee7b7,rgba(110,231,183,0.3))'
+              : pct >= 0.33 ? 'linear-gradient(180deg,#8b7cf8,rgba(139,124,248,0.3))'
+              : 'linear-gradient(180deg,#e879a0,rgba(232,121,160,0.3))';
+    const short = q.name.length > 9 ? q.name.slice(0,8)+'…' : q.name;
+    return `<div class="chart-col">
+      <div class="chart-track">
+        <div class="chart-fill" style="height:${h}px;background:${col}" data-tip="${esc(q.name)}: ${q.views}/9"></div>
+      </div>
+      <div class="chart-lbl">${esc(short)}</div>
+    </div>`;
+  }).join('');
+}
+
+/* ── MAIN RENDER ── */
+function render() {
+  renderChart();
+  const grid = document.getElementById('cardsGrid');
+  const list = getSorted(getFiltered());
+
+  document.getElementById('statTotal').textContent = quizlets.length;
+  document.getElementById('statViews').textContent = quizlets.reduce((s,q) => s+q.views, 0);
+  document.getElementById('statMastered').textContent = quizlets.filter(q => q.views >= 9).length;
+  document.getElementById('statInProgress').textContent = quizlets.filter(q => q.views > 0 && q.views < 9).length;
+
+  if (!list.length) {
+    grid.innerHTML = `<div class="empty"><div class="empty-icon">📭</div><p>${!quizlets.length ? 'Ajoute ton premier quizlet ci-dessus !' : 'Aucun quizlet trouvé.'}</p></div>`;
+    return;
+  }
+
+  const notMastered = quizlets.filter(q => q.views < 9);
+  const minV = notMastered.length ? Math.min(...notMastered.map(q => q.views)) : -1;
+
+  grid.innerHTML = list.map(q => {
+    const isMastered = q.views >= 9;
+    const isPriority = !isMastered && q.views === minV && q.views < 5;
+    const dl = deadlineInfo(q.deadline);
+    const isUrgent = dl?.urgent && !isMastered;
+    const cardClass = isMastered ? 'c-mastered' : isUrgent ? 'c-urgent' : isPriority ? 'c-priority' : 'c-normal';
+    const pct = q.views / 9;
+    const barW = Math.round(pct * 100);
+
+    const dots = Array.from({length:9}, (_,i) => {
+      const on = i < q.views;
+      const cls = on ? (i===8 ? 'on r9' : i>=6 ? 'on r678' : 'on') : '';
+      return `<div class="dot ${cls}" onclick="dotClick(${q.id},${i+1})" title="${i+1} vue${i>0?'s':''}">${on?'✓':''}</div>`;
+    }).join('');
+
+    return `
+    <div class="quizlet-card ${cardClass}">
+      <div>
+        <div class="card-name-row">
+          <span class="card-name">${esc(q.name)}</span>
+          ${isMastered ? '<span class="badge badge-gold">⭐ Maîtrisé</span>' : ''}
+          ${isPriority && !isMastered ? '<span class="badge badge-rose">🔥 Priorité</span>' : ''}
+        </div>
+        ${dl ? `<div class="deadline-badge ${dl.cls}">📅 ${dl.label}</div>` : ''}
+        <div class="prog-wrap" style="margin-top:${dl?'0.6rem':'0'}">
+          <div class="prog-track">
+            <div class="prog-fill" style="width:${barW}%;background:${barGradient(pct)}"></div>
+          </div>
+          <div class="prog-meta">
+            <span class="prog-pct">${barW}% complété</span>
+            <span class="prog-count ${isMastered?'c-g':'c-a'}">${q.views} / 9</span>
+          </div>
+        </div>
+        <div class="dots-row">${dots}</div>
+        <div class="card-meta">Ajouté le ${q.createdAt}</div>
+      </div>
+      <div class="card-actions">
+        <button class="btn-add" onclick="addView(${q.id})">+ 1 Vue</button>
+        <button class="btn-sm" onclick="openRename(${q.id})">✏️ Modifier</button>
+        <button class="btn-sm del" onclick="deleteQuizlet(${q.id})">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+document.getElementById('inputName').addEventListener('keydown', e => { if (e.key==='Enter') addQuizlet(); });
+render();
+</script>
+</body>
+</html>
