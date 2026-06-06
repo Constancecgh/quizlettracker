@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr" data-theme="dark">
+<html lang="fr" data-theme="light">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -54,7 +54,7 @@
   .page.active{display:block;}
 
   /* ── STATS ROW ── */
-  .stats-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:0.7rem;margin-bottom:1.6rem;}
+  .stats-bar{display:grid;grid-template-columns:repeat(3,1fr);gap:0.7rem;margin-bottom:1.6rem;}
   .stat{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.1rem;transition:border-color 0.2s;}
   .stat:hover{border-color:var(--border2);}
   .stat-label{font-size:0.62rem;font-weight:500;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.3rem;}
@@ -134,11 +134,33 @@
   .ca{color:var(--accent);} .cg{color:var(--gold);}
 
   .dots-row{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:0.6rem;}
-  .dot{width:21px;height:21px;border-radius:5px;border:1px solid var(--border2);background:var(--surface);cursor:pointer;transition:all 0.15s;display:flex;align-items:center;justify-content:center;font-size:0.55rem;color:transparent;}
+  .dot{width:21px;height:21px;border-radius:5px;border:1px solid var(--border2);background:var(--surface);cursor:pointer;transition:background 0.15s,border-color 0.15s,box-shadow 0.15s;display:flex;align-items:center;justify-content:center;font-size:0.55rem;color:transparent;}
   .dot:hover{border-color:var(--accent);background:var(--accent-soft);}
   .dot.on{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:0 1px 5px var(--accent-glow);}
-  .dot.on.r7{background:var(--rose);border-color:var(--rose);box-shadow:0 1px 5px var(--rose-soft);}
+  .dot.on.r7{background:var(--rose);border-color:var(--rose);color:#fff;box-shadow:0 1px 5px var(--rose-soft);}
   .dot.on.r9{background:var(--gold);border-color:var(--gold);color:#111;box-shadow:0 1px 5px var(--gold-soft);}
+
+  .last-seen{display:inline-flex;align-items:center;gap:4px;font-size:0.65rem;font-weight:500;border-radius:100px;padding:2px 9px;border:1px solid;margin-top:0.3rem;}
+  .ls-today{color:var(--green);border-color:rgba(94,234,212,0.3);background:rgba(94,234,212,0.08);}
+  .ls-recent{color:var(--accent);border-color:rgba(139,124,248,0.3);background:rgba(139,124,248,0.08);}
+  .ls-old{color:var(--orange);border-color:rgba(251,146,60,0.3);background:rgba(251,146,60,0.08);}
+  .ls-very-old{color:var(--red);border-color:rgba(248,113,113,0.3);background:rgba(248,113,113,0.08);}
+  .ls-never{color:var(--muted);border-color:var(--border2);background:var(--surface);}
+
+  /* ── HISTORIQUE PAGE ── */
+  .hist-day{margin-bottom:1.6rem;}
+  .hist-day-label{font-size:0.68rem;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);margin-bottom:0.7rem;display:flex;align-items:center;gap:0.6rem;}
+  .hist-day-label::after{content:'';flex:1;height:1px;background:var(--border);}
+  .hist-count{font-weight:400;font-size:0.62rem;color:var(--muted2);text-transform:none;letter-spacing:0;}
+  .hist-cards{display:grid;gap:0.5rem;}
+  .hist-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:0.9rem 1.1rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;}
+  .hist-card-name{font-family:'Playfair Display',serif;font-size:0.9rem;font-weight:600;color:var(--text);}
+  .hist-card-meta{font-size:0.65rem;color:var(--muted);margin-top:2px;}
+  .hist-views{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:var(--accent);white-space:nowrap;text-align:right;}
+  .hist-views span{font-size:0.65rem;font-weight:400;color:var(--muted);display:block;}
+  .hist-empty{text-align:center;padding:3rem 2rem;color:var(--muted2);}
+  .hist-empty-icon{font-size:2rem;margin-bottom:0.6rem;opacity:0.3;}
+  .stale-alert{background:rgba(251,146,60,0.08);border:1px solid rgba(251,146,60,0.25);border-radius:var(--radius-sm);padding:0.8rem 1rem;margin-bottom:1.2rem;font-size:0.8rem;color:var(--orange);display:flex;align-items:center;gap:0.5rem;}
 
   .card-meta{font-size:0.62rem;color:var(--muted2);}
   .matiere-tag{display:inline-block;font-size:0.6rem;font-weight:600;border-radius:100px;padding:1px 8px;margin-right:4px;font-family:'Outfit',sans-serif;}
@@ -221,6 +243,20 @@
   .btn-cancel{background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:var(--radius-sm);padding:0.62rem 1.1rem;font-size:0.84rem;font-family:'Outfit',sans-serif;}
   .btn-cancel:hover{border-color:var(--border2);color:var(--text2);}
 
+  /* ── OBJECTIF JOURNALIER ── */
+  .goal-bar{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1.1rem 1.4rem;margin-bottom:1.4rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap;}
+  .goal-left{flex:1;min-width:160px;}
+  .goal-title{font-size:0.65rem;font-weight:600;letter-spacing:0.13em;text-transform:uppercase;color:var(--muted);margin-bottom:0.5rem;display:flex;align-items:center;justify-content:space-between;}
+  .goal-count{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;}
+  .goal-count.done{color:var(--green);}
+  .goal-count.going{color:var(--accent);}
+  .goal-track{height:7px;background:var(--surface);border-radius:100px;overflow:hidden;margin-top:0.45rem;}
+  .goal-fill{height:100%;border-radius:100px;transition:width 0.5s cubic-bezier(0.34,1.56,0.64,1),background 0.4s;}
+  .goal-right{display:flex;align-items:center;gap:0.5rem;white-space:nowrap;}
+  .goal-label{font-size:0.75rem;color:var(--muted);}
+  .goal-input{width:52px;text-align:center;padding:0.4rem 0.5rem;font-size:0.9rem;font-family:'Playfair Display',serif;font-weight:700;}
+  .goal-done-badge{font-size:0.75rem;font-weight:600;color:var(--green);border:1px solid rgba(94,234,212,0.3);background:rgba(94,234,212,0.08);border-radius:100px;padding:2px 10px;}
+
   /* TOAST */
   .toast{position:fixed;bottom:1.8rem;right:1.8rem;background:var(--card2);border:1px solid var(--border2);color:var(--text2);padding:0.8rem 1.3rem;border-radius:var(--radius);font-size:0.84rem;font-weight:500;box-shadow:0 12px 40px var(--shadow);transform:translateY(110px);opacity:0;transition:all 0.35s cubic-bezier(0.34,1.56,0.64,1);z-index:1000;max-width:280px;}
   .toast.show{transform:translateY(0);opacity:1;}
@@ -257,17 +293,34 @@
   <div class="nav">
     <button class="nav-tab active" onclick="goPage('quizlets',this)">📚 Quizlets</button>
     <button class="nav-tab" onclick="goPage('matieres',this)">🗂 Matières</button>
-    <button class="nav-tab" onclick="goPage('viz',this)">📊 Visualisation</button>
-    <button class="nav-tab" onclick="goPage('data',this)">💾 Données</button>
+    <button class="nav-tab" onclick="goPage('historique',this)">🕐 Historique</button>
+    <button class="nav-tab" onclick="goPage('viz',this)">📊 Stats</button>
+    <button class="nav-tab" onclick="goPage('data',this)">💾 Data</button>
   </div>
 
   <!-- ══ PAGE QUIZLETS ══ -->
   <div class="page active" id="page-quizlets">
     <div class="stats-bar">
       <div class="stat"><div class="stat-label">Quizlets</div><div class="stat-value v-accent" id="sTotal">0</div></div>
-      <div class="stat"><div class="stat-label">Vues totales</div><div class="stat-value v-text" id="sViews">0</div></div>
       <div class="stat"><div class="stat-label">Maîtrisés</div><div class="stat-value v-gold" id="sMastered">0</div></div>
       <div class="stat"><div class="stat-label">En cours</div><div class="stat-value v-green" id="sInProgress">0</div></div>
+    </div>
+
+    <!-- OBJECTIF JOURNALIER -->
+    <div class="goal-bar">
+      <div class="goal-left">
+        <div class="goal-title">
+          <span>🎯 Objectif du jour</span>
+          <span id="goalDoneLabel"></span>
+        </div>
+        <div class="goal-track"><div class="goal-fill" id="goalFill"></div></div>
+        <div style="margin-top:0.35rem;font-size:0.7rem;color:var(--muted)" id="goalSubtitle"></div>
+      </div>
+      <div class="goal-right">
+        <span class="goal-label">Objectif :</span>
+        <input type="number" min="1" max="50" id="goalInput" class="goal-input" value="5" oninput="saveGoal()" />
+        <span class="goal-label">/ jour</span>
+      </div>
     </div>
 
     <div class="add-form">
@@ -321,6 +374,12 @@
       </div>
     </div>
     <div class="matiere-grid" id="matiereGrid"></div>
+  </div>
+
+  <!-- ══ PAGE HISTORIQUE ══ -->
+  <div class="page" id="page-historique">
+    <div id="staleAlert" style="display:none" class="stale-alert">⚠️ <span id="staleMsg"></span></div>
+    <div id="histContent"></div>
   </div>
 
   <!-- ══ PAGE VISUALISATION ══ -->
@@ -399,7 +458,7 @@ let quizlets = JSON.parse(localStorage.getItem('qt_quizlets') || '[]');
 let matieres = JSON.parse(localStorage.getItem('qt_matieres') || '[]');
 let currentFilter = 'all';
 let editId = null;
-let isDark = localStorage.getItem('qt_theme') !== 'light';
+let isDark = localStorage.getItem('qt_theme') === 'dark';
 let currentPage = 'quizlets';
 
 /* ══ THEME ══ */
@@ -423,6 +482,7 @@ function goPage(id, btn){
   currentPage = id;
   if(id==='viz') renderViz();
   if(id==='matieres') renderMatieres();
+  if(id==='historique') renderHistorique();
 }
 
 /* ══ MATIÈRES ══ */
@@ -539,7 +599,7 @@ function addQuizlet(){
   if(quizlets.find(x=>x.name.toLowerCase()===name.toLowerCase())){showToast('❌ Existe déjà !');return;}
   const matiereId=document.getElementById('inputMatiere').value?Number(document.getElementById('inputMatiere').value):null;
   const deadline=document.getElementById('inputDeadline').value||null;
-  quizlets.unshift({id:Date.now(),name,views:0,matiereId,deadline,createdAt:new Date().toLocaleDateString('fr-FR')});
+  quizlets.unshift({id:Date.now(),name,views:0,matiereId,deadline,lastSeen:null,history:[],createdAt:new Date().toLocaleDateString('fr-FR')});
   inp.value=''; document.getElementById('inputDeadline').value='';
   save(); renderQuizlets(); if(currentPage==='viz') renderViz();
   showToast('✅ Quizlet ajouté');
@@ -548,14 +608,30 @@ function addQuizlet(){
 /* ══ VIEWS ══ */
 function addView(id){
   const q=quizlets.find(x=>x.id===id); if(!q) return;
-  if(q.views<9){ q.views++; save(); renderQuizlets(); if(currentPage==='viz') renderViz();
+  if(q.views<9){
+    q.views++;
+    const now=Date.now();
+    q.lastSeen=now;
+    if(!q.history) q.history=[];
+    // log one entry per day max
+    const today=dayKey(now);
+    const last=q.history[q.history.length-1];
+    if(!last||last.date!==today) q.history.push({date:today,ts:now});
+    save(); renderQuizlets(); renderGoal(); if(currentPage==='viz') renderViz(); if(currentPage==='historique') renderHistorique();
     if(q.views===9){showToast(`⭐ "${q.name}" est maîtrisé !`);launchConfetti();}
     else showToast(`👁 +1 vue — ${q.views}/9`);
   } else showToast('⭐ Déjà maîtrisé !');
 }
 function setViews(id,val){
   const q=quizlets.find(x=>x.id===id); if(!q) return;
-  const was=q.views>=9; q.views=val; save(); renderQuizlets(); if(currentPage==='viz') renderViz();
+  const was=q.views>=9; q.views=val;
+  if(val>0){
+    const now=Date.now(); q.lastSeen=now;
+    if(!q.history) q.history=[];
+    const today=dayKey(now); const last=q.history[q.history.length-1];
+    if(!last||last.date!==today) q.history.push({date:today,ts:now});
+  }
+  save(); renderQuizlets(); renderGoal(); if(currentPage==='viz') renderViz(); if(currentPage==='historique') renderHistorique();
   if(val===9&&!was){showToast(`⭐ Maîtrisé !`);launchConfetti();}
 }
 function dotClick(id,val){ const q=quizlets.find(x=>x.id===id); if(!q) return; setViews(id,q.views===val?val-1:val); }
@@ -627,7 +703,84 @@ function resetAll(){
   showToast('🗑 Données supprimées');
 }
 
-/* ══ RENDER QUIZLETS ══ */
+/* ══ LAST SEEN HELPERS ══ */
+function dayKey(ts){ const d=new Date(ts); return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`; }
+function daysSince(ts){ if(!ts) return null; const now=new Date(); now.setHours(0,0,0,0); const d=new Date(ts); d.setHours(0,0,0,0); return Math.floor((now-d)/86400000); }
+function lastSeenInfo(q){
+  const d=daysSince(q.lastSeen);
+  if(d===null) return{label:'Jamais vu',cls:'ls-never'};
+  if(d===0) return{label:"Vu aujourd'hui",cls:'ls-today'};
+  if(d===1) return{label:'Vu hier',cls:'ls-recent'};
+  if(d<=3) return{label:`Vu il y a ${d}j`,cls:'ls-recent'};
+  if(d<=7) return{label:`Vu il y a ${d}j`,cls:'ls-old'};
+  return{label:`Vu il y a ${d}j ⚠️`,cls:'ls-very-old'};
+}
+
+/* ══ RENDER HISTORIQUE ══ */
+function renderHistorique(){
+  // Stale alert: quizlets not seen in 7+ days (not mastered)
+  const stale=quizlets.filter(q=>q.views<9&&daysSince(q.lastSeen)>=7||q.views<9&&q.lastSeen===null&&q.views>0);
+  const alert=document.getElementById('staleAlert');
+  const msg=document.getElementById('staleMsg');
+  if(stale.length){
+    alert.style.display='flex';
+    msg.textContent=`${stale.length} quizlet${stale.length>1?'s':''} non vu${stale.length>1?'s':''} depuis 7+ jours — pense à les réviser !`;
+  } else { alert.style.display='none'; }
+
+  // Group quizlets by last seen day
+  const today=dayKey(Date.now());
+  const groups={};
+  const never=[];
+
+  quizlets.forEach(q=>{
+    if(!q.lastSeen){ never.push(q); return; }
+    const d=daysSince(q.lastSeen);
+    const key=d===0?'Aujourd\'hui':d===1?'Hier':`Il y a ${d} jour${d>1?'s':''}`;
+    if(!groups[key]) groups[key]={days:d,items:[]};
+    groups[key].items.push(q);
+  });
+
+  const sorted=Object.entries(groups).sort((a,b)=>a[1].days-b[1].days);
+  let html='';
+
+  if(!quizlets.length){
+    html='<div class="hist-empty"><div class="hist-empty-icon">📭</div><p>Aucun quizlet — commence par en ajouter !</p></div>';
+    document.getElementById('histContent').innerHTML=html; return;
+  }
+
+  sorted.forEach(([label,{days,items}])=>{
+    const sorted2=[...items].sort((a,b)=>(b.lastSeen||0)-(a.lastSeen||0));
+    html+=`<div class="hist-day">
+      <div class="hist-day-label">${label} <span class="hist-count">${items.length} quizlet${items.length>1?'s':''}</span></div>
+      <div class="hist-cards">${sorted2.map(q=>{
+        const mName=q.matiereId?getMatiereName(q.matiereId):'';
+        const mColor=q.matiereId?getMatiereColor(q.matiereId):'var(--muted2)';
+        const pct=Math.round(q.views/9*100);
+        return `<div class="hist-card">
+          <div>
+            <div class="hist-card-name">${esc(q.name)}</div>
+            <div class="hist-card-meta">${mName?`<span style="color:${mColor}">${esc(mName)} · </span>`:''}${pct}% complété</div>
+          </div>
+          <div class="hist-views">${q.views}/9<span>vues</span></div>
+        </div>`;
+      }).join('')}</div>
+    </div>`;
+  });
+
+  if(never.length){
+    html+=`<div class="hist-day">
+      <div class="hist-day-label" style="color:var(--muted2)">Jamais révisés <span class="hist-count">${never.length}</span></div>
+      <div class="hist-cards">${never.map(q=>`<div class="hist-card" style="opacity:0.6">
+        <div><div class="hist-card-name">${esc(q.name)}</div><div class="hist-card-meta">Pas encore commencé</div></div>
+        <div class="hist-views" style="color:var(--muted)">0/9<span>vues</span></div>
+      </div>`).join('')}</div>
+    </div>`;
+  }
+
+  document.getElementById('histContent').innerHTML=html;
+}
+
+
 function barGrad(pct){
   if(pct<=0) return isDark?'#1e1e30':'#e8e8f0';
   if(pct<0.33) return 'linear-gradient(90deg,#e879a0,#f8a4c0)';
@@ -641,7 +794,6 @@ function renderQuizlets(){
   const list=getSorted(getFiltered());
 
   document.getElementById('sTotal').textContent=quizlets.length;
-  document.getElementById('sViews').textContent=quizlets.reduce((s,q)=>s+q.views,0);
   document.getElementById('sMastered').textContent=quizlets.filter(q=>q.views>=9).length;
   document.getElementById('sInProgress').textContent=quizlets.filter(q=>q.views>0&&q.views<9).length;
 
@@ -684,6 +836,7 @@ function renderQuizlets(){
           ${mName?`<span class="matiere-tag" style="background:${mColor}22;color:${mColor};border:1px solid ${mColor}44">${esc(mName)}</span>`:''}
           Ajouté le ${q.createdAt}
         </div>
+        <div class="last-seen ${lastSeenInfo(q).cls}">${lastSeenInfo(q).label}</div>
       </div>
       <div class="card-actions">
         <button class="btn-add" onclick="addView(${q.id})">+ 1 Vue</button>
@@ -799,10 +952,52 @@ function showToast(msg){
   clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),2600);
 }
 
+/* ══ OBJECTIF JOURNALIER ══ */
+function todayKey(){ const d=new Date(); return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`; }
+
+function getTodayViews(){
+  // Count quizlets that received a +1 view today
+  const tk=todayKey();
+  return quizlets.filter(q=>q.history&&q.history.some(h=>h.date===tk)).length;
+}
+
+function saveGoal(){
+  const val=parseInt(document.getElementById('goalInput').value)||5;
+  localStorage.setItem('qt_goal', val);
+  renderGoal();
+}
+
+function renderGoal(){
+  const goal=parseInt(localStorage.getItem('qt_goal')||'5');
+  const done=getTodayViews();
+  const pct=Math.min(done/goal*100,100);
+  const isDone=done>=goal;
+
+  document.getElementById('goalInput').value=goal;
+
+  const fill=document.getElementById('goalFill');
+  fill.style.width=pct+'%';
+  fill.style.background=isDone
+    ?'linear-gradient(90deg,#5eead4,#4ade80)'
+    :pct>60?'linear-gradient(90deg,#8b7cf8,#e879a0)'
+    :'linear-gradient(90deg,#8b7cf8,#b09ef9)';
+
+  const label=document.getElementById('goalDoneLabel');
+  label.innerHTML=isDone
+    ?'<span class="goal-done-badge">✅ Objectif atteint !</span>'
+    :`<span class="goal-count going">${done} / ${goal}</span>`;
+
+  const sub=document.getElementById('goalSubtitle');
+  if(isDone) sub.textContent=`Bravo ! Tu as révisé ${done} quizlet${done>1?'s':''} aujourd'hui 🎉`;
+  else if(done===0) sub.textContent='Aucun quizlet révisé aujourd\'hui — c\'est le moment !';
+  else sub.textContent=`Plus que ${goal-done} quizlet${goal-done>1?'s':''} pour atteindre ton objectif`;
+}
+
 /* ══ INIT ══ */
 document.getElementById('inputName').addEventListener('keydown',e=>{ if(e.key==='Enter') addQuizlet(); });
 populateMatiereSelects();
 renderQuizlets();
+renderGoal();
 </script>
 </body>
 </html>
