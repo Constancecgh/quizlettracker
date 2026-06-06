@@ -394,13 +394,6 @@
     </div>
 
     <div class="viz-section">
-      <div class="viz-title">Progression individuelle <span>Scroll horizontal si beaucoup de quizlets</span></div>
-      <div class="bar-chart-wrap">
-        <div class="bar-chart" id="barChart"></div>
-      </div>
-    </div>
-
-    <div class="viz-section">
       <div class="viz-title">Tableau détaillé</div>
       <table class="prog-table">
         <thead><tr>
@@ -582,7 +575,7 @@ function getFiltered(){
   const fm=document.getElementById('filterMatiere').value;
   return quizlets.filter(x=>{
     if(q&&!x.name.toLowerCase().includes(q)) return false;
-    if(fm&&String(x.matiereId)!==fm) return false;
+    if(fm&&String(x.matiereId)!==String(fm)) return false;
     if(currentFilter==='mastered') return x.views>=9;
     if(currentFilter==='in_progress') return x.views>0&&x.views<9;
     if(currentFilter==='new') return x.views===0;
@@ -601,7 +594,7 @@ function addQuizlet(){
   const deadline=document.getElementById('inputDeadline').value||null;
   quizlets.unshift({id:Date.now(),name,views:0,matiereId,deadline,lastSeen:null,history:[],createdAt:new Date().toLocaleDateString('fr-FR')});
   inp.value=''; document.getElementById('inputDeadline').value='';
-  save(); renderQuizlets(); if(currentPage==='viz') renderViz();
+  save(); renderQuizlets(); renderGoal(); if(currentPage==='viz') renderViz();
   showToast('✅ Quizlet ajouté');
 }
 
@@ -624,8 +617,10 @@ function addView(id){
 }
 function setViews(id,val){
   const q=quizlets.find(x=>x.id===id); if(!q) return;
-  const was=q.views>=9; q.views=val;
-  if(val>0){
+  const was=q.views>=9;
+  const isIncrement = val > q.views; // only log if actually going up
+  q.views=val;
+  if(isIncrement && val>0){
     const now=Date.now(); q.lastSeen=now;
     if(!q.history) q.history=[];
     const today=dayKey(now); const last=q.history[q.history.length-1];
@@ -639,7 +634,11 @@ function dotClick(id,val){ const q=quizlets.find(x=>x.id===id); if(!q) return; s
 /* ══ DELETE ══ */
 function deleteQuizlet(id){
   if(!confirm('Supprimer ?')) return;
-  quizlets=quizlets.filter(x=>x.id!==id); save(); renderQuizlets(); showToast('🗑 Supprimé');
+  quizlets=quizlets.filter(x=>x.id!==id); save(); renderQuizlets(); renderGoal();
+  if(currentPage==='viz') renderViz();
+  if(currentPage==='historique') renderHistorique();
+  if(currentPage==='matieres') renderMatieres();
+  showToast('🗑 Supprimé');
 }
 
 /* ══ EDIT ══ */
@@ -699,12 +698,13 @@ function importJSON(e){
 }
 function resetAll(){
   if(!confirm('Supprimer TOUTES tes données ? Irréversible !')) return;
-  quizlets=[]; matieres=[]; save(); renderQuizlets(); renderMatieres(); populateMatiereSelects();
+  quizlets=[]; matieres=[]; save();
+  renderQuizlets(); renderGoal(); renderMatieres(); populateMatiereSelects();
   showToast('🗑 Données supprimées');
 }
 
 /* ══ LAST SEEN HELPERS ══ */
-function dayKey(ts){ const d=new Date(ts); return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`; }
+function dayKey(ts){ const d=new Date(ts); return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`; }
 function daysSince(ts){ if(!ts) return null; const now=new Date(); now.setHours(0,0,0,0); const d=new Date(ts); d.setHours(0,0,0,0); return Math.floor((now-d)/86400000); }
 function lastSeenInfo(q){
   const d=daysSince(q.lastSeen);
@@ -719,13 +719,13 @@ function lastSeenInfo(q){
 /* ══ RENDER HISTORIQUE ══ */
 function renderHistorique(){
   // Stale alert: quizlets not seen in 7+ days (not mastered)
-  const stale=quizlets.filter(q=>q.views<9&&daysSince(q.lastSeen)>=7||q.views<9&&q.lastSeen===null&&q.views>0);
-  const alert=document.getElementById('staleAlert');
+  const stale=quizlets.filter(q=>q.views<9&&(daysSince(q.lastSeen)>=7||(q.lastSeen===null&&q.views>0)));
+  const staleEl=document.getElementById('staleAlert');
   const msg=document.getElementById('staleMsg');
   if(stale.length){
-    alert.style.display='flex';
+    staleEl.style.display='flex';
     msg.textContent=`${stale.length} quizlet${stale.length>1?'s':''} non vu${stale.length>1?'s':''} depuis 7+ jours — pense à les réviser !`;
-  } else { alert.style.display='none'; }
+  } else { staleEl.style.display='none'; }
 
   // Group quizlets by last seen day
   const today=dayKey(Date.now());
@@ -782,7 +782,7 @@ function renderHistorique(){
 
 
 function barGrad(pct){
-  if(pct<=0) return isDark?'#1e1e30':'#e8e8f0';
+  if(pct<=0) return 'transparent';
   if(pct<0.33) return 'linear-gradient(90deg,#e879a0,#f8a4c0)';
   if(pct<0.67) return 'linear-gradient(90deg,#8b7cf8,#b09ef9)';
   if(pct<1) return 'linear-gradient(90deg,#6ee7b7,#8b7cf8)';
@@ -882,20 +882,6 @@ function renderViz(){
       <span class="legend-label">${s.label}</span>
       <span class="legend-val">${s.val}</span>
     </div>`).join('');
-
-  // Bar chart (horizontal scroll, 44px per bar)
-  const sorted=[...quizlets].sort((a,b)=>b.views-a.views);
-  document.getElementById('barChart').innerHTML=sorted.map(q=>{
-    const pct=q.views/9;
-    const h=Math.max(Math.round(pct*130),q.views>0?4:0);
-    const col=pct>=1?'#e8c97a':pct>=0.67?'#6ee7b7':pct>=0.33?'#8b7cf8':'#e879a0';
-    const short=q.name.length>7?q.name.slice(0,6)+'…':q.name;
-    return `<div class="bar-col">
-      <div class="bar-val">${q.views}</div>
-      <div class="bar-track"><div class="bar-fill" style="height:${h}px;background:${col}" data-tip="${esc(q.name)}: ${q.views}/9"></div></div>
-      <div class="bar-lbl" title="${esc(q.name)}">${esc(short)}</div>
-    </div>`;
-  }).join('');
 
   // Table
   const tableRows=[...quizlets].sort((a,b)=>b.views-a.views).map(q=>{
