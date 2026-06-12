@@ -158,6 +158,8 @@
   .hist-card-meta{font-size:0.65rem;color:var(--muted);margin-top:2px;}
   .hist-views{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:var(--accent);white-space:nowrap;text-align:right;}
   .hist-views span{font-size:0.65rem;font-weight:400;color:var(--muted);display:block;}
+  .btn-mark-seen{background:var(--accent-soft);border:1px solid rgba(139,124,248,0.2);color:var(--accent);border-radius:8px;padding:0.35rem 0.7rem;font-size:0.75rem;font-weight:600;font-family:'Outfit',sans-serif;white-space:nowrap;cursor:pointer;transition:all 0.15s;}
+  .btn-mark-seen:hover{background:rgba(139,124,248,0.22);}
   .hist-empty{text-align:center;padding:3rem 2rem;color:var(--muted2);}
   .hist-empty-icon{font-size:2rem;margin-bottom:0.6rem;opacity:0.3;}
   .stale-alert{background:rgba(251,146,60,0.08);border:1px solid rgba(251,146,60,0.25);border-radius:var(--radius-sm);padding:0.8rem 1rem;margin-bottom:1.2rem;font-size:0.8rem;color:var(--orange);display:flex;align-items:center;gap:0.5rem;}
@@ -716,6 +718,19 @@ function lastSeenInfo(q){
   return{label:`Vu il y a ${d}j ⚠️`,cls:'ls-very-old'};
 }
 
+/* ══ MARK SEEN (sans changer le compteur de vues) ══ */
+function markSeen(id){
+  const q=quizlets.find(x=>x.id===id); if(!q) return;
+  const now=Date.now();
+  q.lastSeen=now;
+  if(!q.history) q.history=[];
+  const today=dayKey(now);
+  const last=q.history[q.history.length-1];
+  if(!last||last.date!==today) q.history.push({date:today,ts:now});
+  save(); renderHistorique(); renderQuizlets(); renderGoal();
+  showToast(`👁 "${q.name}" marqué comme vu !`);
+}
+
 /* ══ RENDER HISTORIQUE ══ */
 function renderHistorique(){
   // Stale alert: quizlets not seen in 7+ days (not mastered)
@@ -756,12 +771,18 @@ function renderHistorique(){
         const mName=q.matiereId?getMatiereName(q.matiereId):'';
         const mColor=q.matiereId?getMatiereColor(q.matiereId):'var(--muted2)';
         const pct=Math.round(q.views/9*100);
+        const seenToday=daysSince(q.lastSeen)===0;
         return `<div class="hist-card">
           <div>
             <div class="hist-card-name">${esc(q.name)}</div>
             <div class="hist-card-meta">${mName?`<span style="color:${mColor}">${esc(mName)} · </span>`:''}${pct}% complété</div>
           </div>
-          <div class="hist-views">${q.views}/9<span>vues</span></div>
+          <div style="display:flex;align-items:center;gap:0.6rem">
+            <div class="hist-views">${q.views}/9<span>vues</span></div>
+            ${seenToday
+              ? `<span style="font-size:0.65rem;color:var(--green);font-weight:600">✅ Fait</span>`
+              : `<button class="btn-mark-seen" onclick="markSeen(${q.id})">👁 Vu</button>`}
+          </div>
         </div>`;
       }).join('')}</div>
     </div>`;
@@ -770,10 +791,20 @@ function renderHistorique(){
   if(never.length){
     html+=`<div class="hist-day">
       <div class="hist-day-label" style="color:var(--muted2)">Jamais révisés <span class="hist-count">${never.length}</span></div>
-      <div class="hist-cards">${never.map(q=>`<div class="hist-card" style="opacity:0.6">
-        <div><div class="hist-card-name">${esc(q.name)}</div><div class="hist-card-meta">Pas encore commencé</div></div>
-        <div class="hist-views" style="color:var(--muted)">0/9<span>vues</span></div>
-      </div>`).join('')}</div>
+      <div class="hist-cards">${never.map(q=>{
+        const mName=q.matiereId?getMatiereName(q.matiereId):'';
+        const mColor=q.matiereId?getMatiereColor(q.matiereId):'var(--muted2)';
+        return `<div class="hist-card" style="opacity:0.7">
+          <div>
+            <div class="hist-card-name">${esc(q.name)}</div>
+            <div class="hist-card-meta">${mName?`<span style="color:${mColor}">${esc(mName)} · </span>`:''}Pas encore commencé</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:0.6rem">
+            <div class="hist-views" style="color:var(--muted)">0/9<span>vues</span></div>
+            <button class="btn-mark-seen" onclick="markSeen(${q.id})">👁 Vu</button>
+          </div>
+        </div>`;
+      }).join('')}</div>
     </div>`;
   }
 
